@@ -81,4 +81,4 @@ Used MongoDB with Flask templating to create a new HTML page that displays all o
 ![final_app_part1.png](images/final_app_part1.png)
 ![final_app_part2.png](images/final_app_part2.png)
 
-* Finally, deployed my Flask app to Heroku !!
+
