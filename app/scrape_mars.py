@@ -5,7 +5,7 @@ import time
 
 
 def init_browser():
-    executable_path = {'executable_path':'C:/Users/Bharathy_Nat/Downloads/chromedriver'}
+    executable_path = {'executable_path': '/usr/local/bin/chromedriver'}
     return Browser('chrome', **executable_path, headless=False)
 
 
@@ -20,12 +20,9 @@ def scrape():
 
     html = browser.html
     news_soup = BeautifulSoup(html, 'html.parser')
-  # Use beautiful soup to find the first news title parent element
-    listTextLabelElem = news_soup.find('div', class_='content_title')# Use the parent element to find the first a tag and save it as `news_title`
-    news_title = listTextLabelElem.find('a').get_text()
-# Use the parent element to find the paragraph text
-    news_p = news_soup.find('div', class_='article_teaser_body').get_text()
-    
+    listTextLabelElem = news_soup.find('div', class_='listTextLabel')
+    mars["news_title"] = listTextLabelElem.find('a').get_text()
+    mars["news_paragraph"] = listTextLabelElem.find('p').get_text()
 
     # Retrieve JPL Mars Featured Image
     url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
@@ -66,40 +63,37 @@ def scrape():
     # Set weather
     mars["weather"] = mars_weather_tweet.find('p', 'tweet-text').get_text()
 
-    # Retrieve Mars Hemisphere Data
-    # url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
-    # browser.visit(url)
-    # time.sleep(1)
+    
+    # Visit the USGS Astogeology site and scrape pictures of the hemispheres
+    url4 = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
+    browser.visit(url4)
 
-    # # List for hemisphere image links
-    # hemisphere_image_urls = []
 
-    # # First, get a list of all of the hemispheres
-    # links = browser.find_by_css("a.product-item")
+# Use splinter to loop through the 4 images and load them into a dictionary
+    import time 
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+    mars_hemis=[]
 
-    # # Next, loop through those links, click the link, find the sample anchor, return the href
-    # for i in range(len(links)):
-    #     hemisphere = {}
+# loop through the four tags and load the data to the dictionary
 
-    #     # We have to find the elements on each loop to avoid a stale element exception
-    #     browser.find_by_css("a.product-item")[i].click()
+    for i in range (4):
+        time.sleep(5)
+        images = browser.find_by_tag('h3')
+        images[i].click()
+        html = browser.html
+        soup = BeautifulSoup(html, 'html.parser')
+        partial = soup.find("img", class_="wide-image")["src"]
+        img_title = soup.find("h2",class_="title").text
+        img_url = 'https://astrogeology.usgs.gov'+ partial
+        dictionary={"title":img_title,"img_url":img_url}
+        mars_hemis.append(dictionary)
+        browser.back()
+        
+        time.sleep(1)
 
-    #     # Next, we find the Sample image anchor tag and extract the href
-    #     sample_elem = browser.find_link_by_text('Sample').first
-    #     hemisphere['img_url'] = sample_elem['href']
-
-    #     # Get Hemisphere title
-    #     hemisphere['title'] = browser.find_by_css("h2.title").text
-
-    #     # Append hemisphere object to list
-    #     hemisphere_image_urls.append(hemisphere)
-
-    #     # Finally, we navigate backwards
-    #     browser.back()
-    #     time.sleep(1)
-
-    # # Set hemispheres
-    # mars["hemispheres"] = hemisphere_image_urls
+    # Set hemispheres
+    mars["hemispheres"] = mars_hemis
 
     df = pd.read_html('http://space-facts.com/mars/')[0]
     df.columns = ['description', 'value']
@@ -111,5 +105,4 @@ def scrape():
     mars['facts'] = table
 
     browser.quit()
-
     return mars
