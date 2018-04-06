@@ -63,20 +63,16 @@ def scrape():
     # Set weather
     mars["weather"] = mars_weather_tweet.find('p', 'tweet-text').get_text()
 
-    
     # Visit the USGS Astogeology site and scrape pictures of the hemispheres
     url4 = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
     browser.visit(url4)
 
-
-# Use splinter to loop through the 4 images and load them into a dictionary
+    # Use splinter to loop through the 4 images and load them into a dictionary
     import time 
     html = browser.html
     soup = BeautifulSoup(html, 'html.parser')
     mars_hemis=[]
-
-# loop through the four tags and load the data to the dictionary
-
+    # Next, loop through those links, click the link, find the sample anchor, return the href
     for i in range (4):
         time.sleep(5)
         images = browser.find_by_tag('h3')
@@ -89,7 +85,6 @@ def scrape():
         dictionary={"title":img_title,"img_url":img_url}
         mars_hemis.append(dictionary)
         browser.back()
-        
         time.sleep(1)
 
     # Set hemispheres
@@ -105,4 +100,5 @@ def scrape():
     mars['facts'] = table
 
     browser.quit()
+
     return mars

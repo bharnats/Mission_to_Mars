@@ -1,6 +1,6 @@
-from flask import Flask, render_template, jsonify
+from flask import (Flask, render_template, jsonify)
 from flask_pymongo import PyMongo
-# from . import scrape_mars
+import scrape_mars
 
 app = Flask(__name__)
 
@@ -13,17 +13,17 @@ def index():
     return render_template('index.html', mars=mars)
 
 
-# @app.route('/scrape')
-# def scrape():
-#     mars = mongo.db.mars
-#     mars_data = scrape_mars.scrape()
-#     print(mars_data)
-#     mars.update_one(
-#         {},
-#         mars_data,
-#         upsert=True
-#     )
-#     return 'Scraping Successful!'
+@app.route('/scrape')
+def scrape():
+    mars = mongo.db.mars
+    mars_data = scrape_mars.scrape()
+    print(mars_data)
+    mars.update(
+        {},
+        mars_data,
+        upsert=True
+    )
+    return 'Scraping Successful!'
 
 
 if __name__ == "__main__":
